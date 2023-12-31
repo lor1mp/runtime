@@ -355,6 +355,11 @@ namespace System.Xml
             }
         }
 
+        public bool WriteSpaceBeforeSelfClose { get; set; } = true;
+        public bool WriteSpaceAfterLastAttribute { get; set; }
+        public bool WriteSpacesAroundAttributeEq { get; set; }
+        public bool InsertFinalNewline { get; set; }
+
         // Gets or sets which character to use for indenting when Formatting is set to "Indented".
         public char IndentChar
         {
@@ -426,6 +431,10 @@ namespace System.Xml
                         throw new ArgumentException(SR.Xml_NoRoot);
                     }
                 }
+
+                if(InsertFinalNewline)
+                    _textWriter.WriteLine();
+
                 _stateTable = s_stateTableDefault;
                 _currentState = State.Start;
                 _lastToken = Token.Empty;
@@ -698,7 +707,7 @@ namespace System.Xml
                 _xmlEncoder.StartAttribute(_specialAttr != SpecialAttr.None);
 
                 _textWriter.Write(localName);
-                _textWriter.Write('=');
+                _textWriter.Write(WriteSpacesAroundAttributeEq ? " = " : "=");
                 if (_curQuoteChar != _quoteChar)
                 {
                     _curQuoteChar = _quoteChar;
@@ -1379,7 +1388,8 @@ namespace System.Xml
             }
         }
 
-        private static readonly char[] s_closeTagEnd = new char[] { ' ', '/', '>' };
+        private static readonly char[] s_closeTagEnd_Wsp = new char[] { ' ', '/', '>' };
+        private static readonly char[] s_closeTagEnd_NoWsp = new char[] { '/', '>' };
 
         private void WriteEndStartTag(bool empty)
         {
@@ -1407,9 +1417,15 @@ namespace System.Xml
                 _stack[_top].defaultNsState = NamespaceState.DeclaredAndWrittenOut;
             }
             _xmlEncoder.EndAttribute();
+
+            if (WriteSpaceAfterLastAttribute)
+            {
+                _textWriter.Write(" ");
+            }
+
             if (empty)
             {
-                _textWriter.Write(s_closeTagEnd);
+                _textWriter.Write(WriteSpaceBeforeSelfClose ? s_closeTagEnd_Wsp : s_closeTagEnd_NoWsp);
             }
             else
             {

@@ -88,5 +88,26 @@ namespace System.Xml.XmlWriterTests
 
             Assert.Throws<ArgumentException>(() => xw.WriteComment(commentText));
         }
+
+        [Fact]
+        public void WriteSelfClosingNode_NoSpace()
+        {
+            StringWriter sw = new StringWriter();
+            XmlTextWriter xw = new XmlTextWriter(sw);
+            xw.WriteSpaceBeforeSelfClose = false;
+            xw.WriteStartElement("foo");
+            xw.WriteEndElement();
+            Assert.Equal("<foo/>", sw.ToString());
+        }
+
+        [Fact]
+        public void WriteSelfClosingNode_Space()
+        {
+            StringWriter sw = new StringWriter();
+            XmlTextWriter xw = new XmlTextWriter(sw);
+            xw.WriteStartElement("foo");
+            xw.WriteEndElement();
+            Assert.Equal("<foo />", sw.ToString());
+        }
     }
 }

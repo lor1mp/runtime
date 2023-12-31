@@ -1089,6 +1089,10 @@ namespace System.Xml
         public System.IO.Stream? BaseStream { get { throw null; } }
         public System.Xml.Formatting Formatting { get { throw null; } set { } }
         public int Indentation { get { throw null; } set { } }
+        public bool WriteSpaceBeforeSelfClose { get { throw null; } set { } }
+        public bool WriteSpaceAfterLastAttribute { get { throw null; } set { } }
+        public bool WriteSpacesAroundAttributeEq { get { throw null; } set { } }
+        public bool InsertFinalNewline { get { throw null; } set { } }
         public char IndentChar { get { throw null; } set { } }
         public bool Namespaces { get { throw null; } set { } }
         public char QuoteChar { get { throw null; } set { } }
