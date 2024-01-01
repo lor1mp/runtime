@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace System.Xml.XmlWriterTests
@@ -89,19 +90,21 @@ namespace System.Xml.XmlWriterTests
             Assert.Throws<ArgumentException>(() => xw.WriteComment(commentText));
         }
 
-        [Fact]
-        public void WriteSelfClosingNode_NoSpace()
+        [Theory]
+        [InlineData(false, "<foo/>")]
+        [InlineData(true,  "<foo />")]
+        public void WriteSelfClosingNode(bool writeSpace, string nodeText)
         {
             StringWriter sw = new StringWriter();
             XmlTextWriter xw = new XmlTextWriter(sw);
-            xw.WriteSpaceBeforeSelfClose = false;
+            xw.WriteSpaceBeforeSelfClose = writeSpace;
             xw.WriteStartElement("foo");
             xw.WriteEndElement();
-            Assert.Equal("<foo/>", sw.ToString());
+            Assert.Equal(nodeText, sw.ToString());
         }
 
         [Fact]
-        public void WriteSelfClosingNode_Space()
+        public void WriteSelfClosingNode_Default()
         {
             StringWriter sw = new StringWriter();
             XmlTextWriter xw = new XmlTextWriter(sw);
@@ -109,5 +112,83 @@ namespace System.Xml.XmlWriterTests
             xw.WriteEndElement();
             Assert.Equal("<foo />", sw.ToString());
         }
+
+        [Theory]
+        [InlineData(false, "<foo bar=\"baz\" />")]
+        [InlineData(true, "<foo bar=\"baz\"  />")]
+        public void WriteSpaceAfterLastAttribute_SelfClose(bool writeSpace, string nodeText)
+        {
+            StringWriter sw = new StringWriter();
+            XmlTextWriter xw = new XmlTextWriter(sw);
+            xw.WriteSpaceAfterLastAttribute = writeSpace;
+            xw.WriteStartElement("foo");
+            xw.WriteAttributeString("bar", "baz");
+            xw.WriteEndElement();
+            Assert.Equal(nodeText, sw.ToString());
+        }
+
+        [Fact]
+        public void WriteSpaceAfterLastAttribute_Default()
+        {
+            StringWriter sw = new StringWriter();
+            XmlTextWriter xw = new XmlTextWriter(sw);
+            xw.WriteStartElement("foo");
+            xw.WriteAttributeString("bar", "baz");
+            xw.WriteEndElement();
+            Assert.Equal("<foo bar=\"baz\" />", sw.ToString());
+        }
+
+        [Theory]
+        [InlineData(false, "<foo bar=\"baz\" />")]
+        [InlineData(true, "<foo bar = \"baz\" />")]
+        public void WriteSpacesAroundAttributeEq(bool writeSpace, string nodeText)
+        {
+            StringWriter sw = new StringWriter();
+            XmlTextWriter xw = new XmlTextWriter(sw);
+            xw.WriteSpacesAroundAttributeEq = writeSpace;
+            xw.WriteStartElement("foo");
+            xw.WriteAttributeString("bar", "baz");
+            xw.WriteEndElement();
+            Assert.Equal(nodeText, sw.ToString());
+        }
+
+        [Fact]
+        public void WriteSpacesAroundAttributeEq_Default()
+        {
+            StringWriter sw = new StringWriter();
+            XmlTextWriter xw = new XmlTextWriter(sw);
+            xw.WriteStartElement("foo");
+            xw.WriteAttributeString("bar", "baz");
+            xw.WriteEndElement();
+            Assert.Equal("<foo bar=\"baz\" />", sw.ToString());
+        }
+
+        [Theory]
+        [InlineData(false, "<?xml version=\"1.0\" encoding=\"utf-16\"?><foo />")]
+        [InlineData(true, "<?xml version=\"1.0\" encoding=\"utf-16\"?><foo />\r\n")]
+        public void InsertFinalNewLine(bool writeSpace, string nodeText)
+        {
+            StringWriter sw = new StringWriter();
+            XmlTextWriter xw = new XmlTextWriter(sw);
+            xw.InsertFinalNewline = writeSpace;
+            xw.WriteStartDocument();
+            xw.WriteStartElement("foo");
+            xw.WriteEndElement();
+            xw.WriteEndDocument();
+            Assert.Equal(nodeText, sw.ToString());
+        }
+
+        [Fact]
+        public void InsertFinalNewLine_Default()
+        {
+            StringWriter sw = new StringWriter();
+            XmlTextWriter xw = new XmlTextWriter(sw);
+            xw.WriteStartDocument();
+            xw.WriteStartElement("foo");
+            xw.WriteEndElement();
+            xw.WriteEndDocument();
+            Assert.Equal("<?xml version=\"1.0\" encoding=\"utf-16\"?><foo />", sw.ToString());
+        }
+
     }
 }
